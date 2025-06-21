@@ -1,14 +1,46 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as THREE from "three";
 import { FBXLoader } from "three-stdlib";
 import { useFoodContext } from "./FoodContext.jsx";
 import "./Bagpack.css";
+import { databases } from "./appwriteConfig"; 
+
+const DATABASE_ID = "6856988d0014123d37b0";
+const COLLECTION_ID = "6856c45200315cd8b059";
+
+type BagData = {
+  name: string;
+  num: number;
+};
 
 function Bagpack() {
   const mountRef1 = useRef<HTMLDivElement>(null);
   const mountRef2 = useRef<HTMLDivElement>(null);
   const mountRef3 = useRef<HTMLDivElement>(null);
+  const [bagItems, setBagItems] = useState<BagData[]>([]);
+  const mountRefs = useRef<React.RefObject<HTMLDivElement | null>[]>([]);
+
+  useEffect(() => {
+    const fetchBags = async () => {
+      try {
+        const response = await databases.listDocuments(DATABASE_ID, COLLECTION_ID);
+        const items = response.documents
+          .filter((doc) => doc.num > 0)
+          .map((doc) => ({
+            name: doc.food,
+            num: doc.num,
+          }));
+        console.log("Fetched pets:", items);
+        setBagItems(items);
+      } catch (err) {
+        console.error("Failed to fetch pets:", err);
+      }
+    };
+
+    fetchBags();
+  }, []);
+
   const navigate = useNavigate();
   const { setSelectedFood } = useFoodContext();
 
@@ -26,6 +58,12 @@ function Bagpack() {
       path: "/assets/Food/Steaming_Dumplings_0621053626_texture.fbx",
     },
   ];
+
+  // Helper function to get quantity for a specific food item
+  const getQuantityForFood = (foodName: string): number => {
+    const bagItem = bagItems.find(item => item.name === foodName);
+    return bagItem ? bagItem.num : 0;
+  };
 
   const handleFoodClick = (food: { name: string; path: string }) => {
     setSelectedFood(food);
@@ -177,7 +215,7 @@ function Bagpack() {
         >
           <div className="food-title">Nasi Lemak</div>
           <div ref={mountRef1} className="model-container"></div>
-          <div className="quantity-badge">x3</div>
+          <div className="quantity-badge">x{getQuantityForFood("Nasi Lemak")}</div>
         </div>
         <div
           className="food-item"
@@ -185,7 +223,7 @@ function Bagpack() {
         >
           <div className="food-title">Parotta & Curry</div>
           <div ref={mountRef2} className="model-container"></div>
-          <div className="quantity-badge">x1</div>
+          <div className="quantity-badge">x{getQuantityForFood("Parotta & Curry")}</div>
         </div>
         <div
           className="food-item"
@@ -193,7 +231,7 @@ function Bagpack() {
         >
           <div className="food-title">Steaming Dumplings</div>
           <div ref={mountRef3} className="model-container"></div>
-          <div className="quantity-badge">x2</div>
+          <div className="quantity-badge">x{getQuantityForFood("Steaming Dumplings")}</div>
         </div>
       </div>
       <button className="close-btn" onClick={handleClose}>
