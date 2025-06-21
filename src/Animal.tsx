@@ -1,14 +1,18 @@
 import React, { useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import * as THREE from "three";
 import { FBXLoader } from "three-stdlib";
+import { useFoodContext } from "./FoodContext.jsx";
 import "./Animal.css";
 
 function Animal() {
   const mountRef = useRef<HTMLDivElement>(null);
   const foodButtonRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { selectedFood } = useFoodContext();
 
-  const handleClose = () => {
-    window.history.back();
+  const handleBackpackClick = () => {
+    navigate("/bagpack");
   };
 
   useEffect(() => {
@@ -45,7 +49,7 @@ function Animal() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    // Food button scene for nasi lemak
+    // Food button scene
     const foodScene = new THREE.Scene();
     const foodCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     const foodRenderer = new THREE.WebGLRenderer({
@@ -54,7 +58,7 @@ function Animal() {
     });
 
     const foodContainer = foodButtonRef.current;
-    const buttonSize = 100; // Size of the food model area
+    const buttonSize = 100;
     foodRenderer.setSize(buttonSize, buttonSize);
     foodRenderer.setClearColor(0x000000, 0);
     foodContainer.appendChild(foodRenderer.domElement);
@@ -86,7 +90,7 @@ function Animal() {
 
     // Variables to store loaded objects
     let tigerObject: THREE.Object3D | null = null;
-    let nasiLemakObject: THREE.Object3D | null = null;
+    let foodObject: THREE.Object3D | null = null;
 
     // Load tiger FBX model
     const loader = new FBXLoader();
@@ -130,11 +134,17 @@ function Animal() {
       }
     );
 
-    // Load Nasi Lemak model for the button
-    const loadNasiLemak = () => {
-      const nasiLoader = new FBXLoader();
-      nasiLoader.load(
-        "/assets/Food/Nasi_Lemak_Dish_0621050817_texture.fbx",
+    // Load selected food model for the button
+    const loadSelectedFood = () => {
+      // Clear previous food object
+      if (foodObject) {
+        foodScene.remove(foodObject);
+        foodObject = null;
+      }
+
+      const foodLoader = new FBXLoader();
+      foodLoader.load(
+        selectedFood.path,
         (object) => {
           object.scale.setScalar(0.1);
 
@@ -146,17 +156,17 @@ function Animal() {
 
           object.userData.isDraggable = true;
           foodScene.add(object);
-          nasiLemakObject = object;
+          foodObject = object;
 
           // Position camera further back for food scene
           foodCamera.position.set(0, 7, 20);
           foodCamera.lookAt(0, 0, 0);
         },
         (progress) => {
-          console.log("Loading nasi lemak progress:", progress);
+          console.log("Loading food progress:", progress);
         },
         (error) => {
-          console.error("Error loading nasi lemak FBX model:", error);
+          console.error("Error loading food FBX model:", error);
         }
       );
     };
@@ -171,9 +181,9 @@ function Animal() {
           tigerObject.rotation.y += 0.0;
         }
 
-        // Animate nasi lemak (if loaded)
-        if (nasiLemakObject) {
-          nasiLemakObject.rotation.y += 0.01;
+        // Animate food (if loaded)
+        if (foodObject) {
+          foodObject.rotation.y += 0.01;
         }
 
         // Render both scenes
@@ -183,7 +193,9 @@ function Animal() {
       animate();
     };
 
-    loadNasiLemak();
+    loadSelectedFood();
+
+    // ...existing mouse event handlers...
 
     const onMouseDown = (event: MouseEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
@@ -200,7 +212,7 @@ function Animal() {
         if (parent && parent.userData.isDraggable) {
           isDragging = true;
 
-          // Clone nasi lemak into main scene
+          // Clone food into main scene
           dragClone = parent.clone();
           dragClone.position.set(0, 0, 0);
           dragClone.scale.setScalar(0.01);
@@ -262,6 +274,9 @@ function Animal() {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
 
       // Clean up main renderer
       if (container && renderer.domElement) {
@@ -275,12 +290,12 @@ function Animal() {
       }
       foodRenderer.dispose();
     };
-  }, []);
+  }, [selectedFood]); // Add selectedFood as dependency
 
   return (
     <div className="animal-container">
       <div ref={mountRef} className="animal-canvas-wrapper" />
-      <div onClick={handleClose} className="animal-backpack-button">
+      <div onClick={handleBackpackClick} className="animal-backpack-button">
         <img
           src="/src/assets/pngtree-handdrawing-school-backpack-png-image_6136819.png"
           alt="Backpack"
@@ -289,7 +304,7 @@ function Animal() {
       </div>
       <div className="animal-food-button">
         <div ref={foodButtonRef} className="animal-food-model" />
-        <div className="animal-food-label">Nasi Lemak</div>
+        {/* <div className="animal-food-label">{selectedFood.name}</div> */}
       </div>
     </div>
   );
