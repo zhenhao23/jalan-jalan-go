@@ -52,75 +52,42 @@ function App() {
       interactive: false,
     });
 
-    // ...existing code...
     mapRef.current.on("load", () => {
-      // Disable all interactions first
-      mapRef.current.dragPan.disable();
-      mapRef.current.touchPitch.disable();
+      // Enable drag rotate (for mouse right-click drag)
+      mapRef.current.dragRotate.enable();
+
+      // Enable touch rotate (two-finger rotation)
+      mapRef.current.touchZoomRotate.enableRotation();
+
+      // Enable touch pitch (single touch drag up/down to change pitch/angle)
+      mapRef.current.touchPitch.enable();
+
+      // IMPORTANT: Enable drag pan for touch pitch to work
+      mapRef.current.dragPan.enable();
+
+      // But disable keyboard interactions to prevent unwanted behavior
       mapRef.current.keyboard.disable();
       mapRef.current.scrollZoom.disable();
       mapRef.current.boxZoom.disable();
       mapRef.current.doubleClickZoom.disable();
-      mapRef.current.touchZoomRotate.disable();
+    });
 
-      // Enable only drag rotate for desktop and touch rotation
+    mapRef.current = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      center: center,
+      zoom: zoom,
+      pitch: INITIAL_PITCH,
+      minZoom: INITIAL_ZOOM - 1,
+      maxZoom: INITIAL_ZOOM + 1,
+      interactive: false,
+    });
+
+    mapRef.current.on("load", () => {
       mapRef.current.dragRotate.enable();
       mapRef.current.touchZoomRotate.enableRotation();
-
-      const canvas = mapRef.current.getCanvas(); // Add this line to get canvas reference
-
-      canvas.addEventListener(
-        "touchstart",
-        (e) => {
-          e.preventDefault(); // Prevent default touch behavior
-          if (e.touches.length === 1) {
-            // Simulate right mouse button for single touch to enable rotation
-            const mouseEvent = new MouseEvent("mousedown", {
-              button: 2, // Right mouse button (changed back to 2)
-              clientX: e.touches[0].clientX,
-              clientY: e.touches[0].clientY,
-              bubbles: true,
-              cancelable: true,
-            });
-            canvas.dispatchEvent(mouseEvent);
-          }
-        },
-        { passive: false }
-      );
-
-      canvas.addEventListener(
-        "touchmove",
-        (e) => {
-          e.preventDefault(); // Prevent default touch behavior
-          if (e.touches.length === 1) {
-            const mouseEvent = new MouseEvent("mousemove", {
-              button: 2, // Right mouse button (changed back to 2)
-              clientX: e.touches[0].clientX,
-              clientY: e.touches[0].clientY,
-              bubbles: true,
-              cancelable: true,
-            });
-            canvas.dispatchEvent(mouseEvent);
-          }
-        },
-        { passive: false }
-      );
-
-      canvas.addEventListener(
-        "touchend",
-        (e) => {
-          e.preventDefault(); // Prevent default touch behavior
-          const mouseEvent = new MouseEvent("mouseup", {
-            button: 2, // Right mouse button (changed back to 2)
-            bubbles: true,
-            cancelable: true,
-          });
-          canvas.dispatchEvent(mouseEvent);
-        },
-        { passive: false }
-      );
+      // Enable touch pitch for mobile
+      mapRef.current.touchPitch.enable();
     });
-    // ...existing code...
 
     if (navigator.geolocation) {
       watchIdRef.current = navigator.geolocation.watchPosition(
@@ -201,6 +168,9 @@ function App() {
           </>
         )}
       </div>
+      {/* <button className="reset-button" onClick={handleButtonClick}>
+        {userLocation ? "Center on Me" : "Reset"}
+      </button> */}
       <div id="map-container" ref={mapContainerRef} />
     </>
   );
