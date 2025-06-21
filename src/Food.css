@@ -1,12 +1,12 @@
 .food-container {
   display: flex;
-  align-items: flex-start; /* Changed from center to flex-start */
+  align-items: flex-start;
   justify-content: center;
   width: 100vw;
   height: 100vh;
   background-color: #f5f5f5;
   padding: 20px;
-  padding-top: 60px; /* Add top padding to move grid down from very top */
+  padding-top: 60px;
   box-sizing: border-box;
   margin: 0;
   overflow: hidden;
@@ -29,10 +29,53 @@
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  padding: 8px;
+  box-sizing: border-box;
+  min-height: 120px; /* Add minimum height */
+}
+
+.food-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  padding: 8px 4px;
+  line-height: 1.2;
+  background-color: white;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0; /* Prevent title from shrinking */
+  min-height: 20px; /* Ensure minimum height for title */
+  display: block; /* Ensure it's displayed */
+}
+
+.model-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  min-height: 60px; /* Add minimum height */
+}
+
+.quantity-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 5;
 }
 
 .close-btn {
@@ -49,14 +92,14 @@
   font-weight: bold;
   cursor: pointer;
   display: flex;
-  align-items: center; /* This centers the cross vertically */
-  justify-content: center; /* This centers the cross horizontally */
+  align-items: center;
+  justify-content: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   z-index: 10;
-  line-height: 1; /* Ensure proper line height for centering */
+  line-height: 1;
 }
 
 .close-btn:hover {
@@ -71,12 +114,31 @@
 @media (max-width: 480px) {
   .food-container {
     padding: 15px;
-    padding-top: 50px; /* Adjust top padding for mobile */
+    padding-top: 50px;
   }
 
   .food-grid {
     max-width: 320px;
     gap: 12px;
+  }
+
+  .food-item {
+    padding: 6px;
+    min-height: 100px;
+  }
+
+  .food-title {
+    font-size: 12px;
+    padding: 6px 2px;
+    min-height: 16px;
+  }
+
+  .quantity-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    bottom: 6px;
+    right: 6px;
   }
 
   .close-btn {

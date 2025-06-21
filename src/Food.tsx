@@ -20,12 +20,7 @@ function Food() {
       if (!mountRef.current) return;
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        50, // Reduced FOV for better perspective
-        1, // Square aspect ratio
-        0.1,
-        1000
-      );
+      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
@@ -34,27 +29,24 @@ function Food() {
       const container = mountRef.current;
       const size = Math.min(container.clientWidth, container.clientHeight);
       renderer.setSize(size, size);
-      renderer.setClearColor(0x000000, 0); // Transparent background
+      renderer.setClearColor(0x000000, 0);
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       container.appendChild(renderer.domElement);
 
       // Improved lighting setup
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Increased ambient light
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambientLight);
 
-      // Main directional light from top-front
       const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
       directionalLight1.position.set(0, 10, 5);
       directionalLight1.castShadow = true;
       scene.add(directionalLight1);
 
-      // Fill light from the side
       const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.6);
       directionalLight2.position.set(-5, 5, 5);
       scene.add(directionalLight2);
 
-      // Additional top light for better visibility
       const topLight = new THREE.DirectionalLight(0xffffff, 0.4);
       topLight.position.set(0, 15, 0);
       scene.add(topLight);
@@ -64,23 +56,19 @@ function Food() {
       loader.load(
         modelPath,
         (object) => {
-          // Scale and position the model
-          object.scale.setScalar(0.02); // Slightly larger scale
+          object.scale.setScalar(0.02);
           object.position.set(0, 0, 0);
 
-          // Center the model
           const box = new THREE.Box3().setFromObject(object);
           const center = box.getCenter(new THREE.Vector3());
           object.position.x = -center.x;
           object.position.y = -center.y;
           object.position.z = -center.z;
 
-          // Enable shadows for the model
           object.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               child.castShadow = true;
               child.receiveShadow = true;
-              // Enhance material properties if needed
               if (child.material) {
                 child.material.needsUpdate = true;
               }
@@ -89,9 +77,8 @@ function Food() {
 
           scene.add(object);
 
-          // Position camera for 45-degree top-down view
           const distance = 8;
-          const angle = Math.PI / 4; // 45 degrees in radians
+          const angle = Math.PI / 4;
           camera.position.set(
             distance * Math.sin(angle),
             distance * Math.sin(angle),
@@ -99,10 +86,9 @@ function Food() {
           );
           camera.lookAt(0, 0, 0);
 
-          // Animation loop
           const animate = () => {
             requestAnimationFrame(animate);
-            object.rotation.y += 0.008; // Slightly slower rotation
+            object.rotation.y += 0.008;
             renderer.render(scene, camera);
           };
           animate();
@@ -115,7 +101,6 @@ function Food() {
         }
       );
 
-      // Handle resize
       const handleResize = () => {
         if (container) {
           const newSize = Math.min(
@@ -130,7 +115,6 @@ function Food() {
 
       window.addEventListener("resize", handleResize);
 
-      // Cleanup function
       return () => {
         window.removeEventListener("resize", handleResize);
         if (container && renderer.domElement) {
@@ -140,7 +124,6 @@ function Food() {
       };
     };
 
-    // Load models using public URLs
     const cleanup1 = loadFBXModel(
       mountRef1 as React.RefObject<HTMLDivElement>,
       "/assets/Food/Nasi_Lemak_Dish_0621050817_texture.fbx"
@@ -164,10 +147,22 @@ function Food() {
   return (
     <div className="food-container">
       <div className="food-grid">
-        <div className="food-item" ref={mountRef1}></div>
-        <div className="food-item" ref={mountRef2}></div>
-        <div className="food-item" ref={mountRef3}></div>
-        <div className="food-item">{/* Fourth item remains empty */}</div>
+        <div className="food-item">
+          <div className="food-title">Nasi Lemak</div>
+          <div ref={mountRef1} className="model-container"></div>
+          <div className="quantity-badge">x3</div>
+        </div>
+        <div className="food-item">
+          <div className="food-title">Parotta & Curry</div>
+          <div ref={mountRef2} className="model-container"></div>
+          <div className="quantity-badge">x1</div>
+        </div>
+        <div className="food-item">
+          <div className="food-title">Steaming Dumplings</div>
+          <div ref={mountRef3} className="model-container"></div>
+          <div className="quantity-badge">x2</div>
+        </div>
+        {/* <div className="food-item">Fourth item remains empty</div> */}
       </div>
       <button className="close-btn" onClick={handleClose}>
         &#10005;
