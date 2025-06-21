@@ -127,7 +127,7 @@ function App() {
           <>
             Live Location - Longitude: {userLocation[0].toFixed(6)} | Latitude:{" "}
             {userLocation[1].toFixed(6)} | Zoom: {INITIAL_ZOOM} | Pitch:{" "}
-            {INITIAL_PITCH}° | Distance: {(distance / 1000).toFixed(2)} km
+            {INITIAL_PITCH}° | Distance: {distance.toFixed(0)} m
           </>
         ) : (
           <>
@@ -136,9 +136,9 @@ function App() {
           </>
         )}
       </div>
-      <button className="reset-button" onClick={handleButtonClick}>
+      {/* <button className="reset-button" onClick={handleButtonClick}>
         {userLocation ? "Center on Me" : "Reset"}
-      </button>
+      </button> */}
       <div id="map-container" ref={mapContainerRef} />
     </>
   );
