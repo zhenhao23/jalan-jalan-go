@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import * as THREE from "three";
 import { FBXLoader } from "three-stdlib";
 import { useFoodContext } from "./FoodContext.jsx";
+import { usePetContext } from "./PetContext.jsx";
 import "./Animal.css";
 
 function Animal() {
@@ -10,9 +11,14 @@ function Animal() {
   const foodButtonRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { selectedFood } = useFoodContext();
+  const { selectedPet } = usePetContext();
 
   const handleBackpackClick = () => {
     navigate("/bagpack");
+  };
+
+  const handleMapClick = () => {
+    navigate("/");
   };
 
   useEffect(() => {
@@ -23,7 +29,7 @@ function Animal() {
 
     if (!mountRef.current || !foodButtonRef.current) return;
 
-    // Main scene for tiger
+    // Main scene for the selected pet
     const scene = new THREE.Scene();
 
     // Load and set background texture - use public folder path
@@ -89,13 +95,13 @@ function Animal() {
     foodScene.add(foodDirectionalLight);
 
     // Variables to store loaded objects
-    let tigerObject: THREE.Object3D | null = null;
+    let petObject: THREE.Object3D | null = null;
     let foodObject: THREE.Object3D | null = null;
 
-    // Load tiger FBX model
+    // Load selected pet FBX model
     const loader = new FBXLoader();
     loader.load(
-      "/assets/Animal/Tribal_Tiger_Cub_0621030339_texture.fbx",
+      selectedPet.path, // Use selectedPet.path instead of hardcoded tiger path
       (object) => {
         object.scale.setScalar(0.02);
         object.position.set(0, 0, 0);
@@ -117,20 +123,20 @@ function Animal() {
         });
 
         scene.add(object);
-        tigerObject = object;
+        petObject = object; // Changed from tigerObject to petObject
 
         const distance = 14;
         camera.position.set(2, 4, distance);
         camera.lookAt(0, 0, 0);
 
-        // Start animation after tiger loads
+        // Start animation after pet loads
         startAnimation();
       },
       (progress) => {
-        console.log("Loading tiger progress:", progress);
+        console.log("Loading pet progress:", progress);
       },
       (error) => {
-        console.error("Error loading tiger FBX model:", error);
+        console.error("Error loading pet FBX model:", error);
       }
     );
 
@@ -176,9 +182,9 @@ function Animal() {
       const animate = () => {
         requestAnimationFrame(animate);
 
-        // Animate tiger (if loaded)
-        if (tigerObject) {
-          tigerObject.rotation.y += 0.0;
+        // Animate pet (if loaded)
+        if (petObject) {
+          petObject.rotation.y += 0.0;
         }
 
         // Animate food (if loaded)
@@ -195,7 +201,7 @@ function Animal() {
 
     loadSelectedFood();
 
-    // ...existing mouse event handlers...
+    // ...existing mouse event handlers remain the same...
 
     const onMouseDown = (event: MouseEvent) => {
       const rect = renderer.domElement.getBoundingClientRect();
@@ -290,11 +296,17 @@ function Animal() {
       }
       foodRenderer.dispose();
     };
-  }, [selectedFood]); // Add selectedFood as dependency
+  }, [selectedFood, selectedPet]); // Add selectedPet as dependency
 
   return (
     <div className="animal-container">
       <div ref={mountRef} className="animal-canvas-wrapper" />
+
+      {/* Map Button - Top Left */}
+      <div onClick={handleMapClick} className="animal-map-button">
+        <span className="animal-map-cross">×</span>
+      </div>
+
       <div onClick={handleBackpackClick} className="animal-backpack-button">
         <img
           src="/src/assets/pngtree-handdrawing-school-backpack-png-image_6136819.png"

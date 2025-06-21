@@ -76,3 +76,120 @@ body {
     font-size: 11px;
   }
 }
+
+.map-backpack-button {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  user-select: none;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.map-backpack-button:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+.map-backpack-button:active {
+  transform: scale(0.95);
+}
+
+.map-backpack-icon {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+}
+
+.map-animal-button {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  user-select: none;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.map-animal-button:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+.map-animal-button:active {
+  transform: scale(0.95);
+}
+
+.map-animal-icon {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+  .map-backpack-button,
+  .map-animal-button {
+    width: 100px;
+    height: 100px;
+    bottom: 20px;
+  }
+
+  .map-backpack-button {
+    left: 20px;
+  }
+
+  .map-animal-button {
+    right: 20px;
+  }
+
+  .map-backpack-icon,
+  .map-animal-icon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-backpack-button,
+  .map-animal-button {
+    width: 80px;
+    height: 80px;
+    bottom: 15px;
+  }
+
+  .map-backpack-button {
+    left: 15px;
+  }
+
+  .map-animal-button {
+    right: 15px;
+  }
+
+  .map-backpack-icon,
+  .map-animal-icon {
+    width: 50px;
+    height: 50px;
+  }
+}

@@ -109,3 +109,67 @@
   justify-content: center;
   filter: brightness(0.7); /* Darkens the entire canvas by 30% */
 }
+
+.animal-map-button {
+  position: absolute;
+  top: 20px;
+  left: 40px;
+  background-color: rgba(220, 53, 69, 0.9); /* Red background */
+  border: none;
+  width: 60px; /* Smaller size */
+  height: 60px; /* Smaller size */
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  user-select: none;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.animal-map-button:hover {
+  background-color: rgba(220, 53, 69, 1);
+  transform: scale(1.05);
+}
+
+.animal-map-button:active {
+  transform: scale(0.95);
+}
+
+.animal-map-cross {
+  color: white;
+  font-size: 30px; /* Large cross */
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+  .animal-map-button {
+    width: 50px;
+    height: 50px;
+    top: 15px;
+    left: 15px;
+  }
+
+  .animal-map-cross {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .animal-map-button {
+    width: 40px;
+    height: 40px;
+    top: 10px;
+    left: 10px;
+  }
+
+  .animal-map-cross {
+    font-size: 20px;
+  }
+}

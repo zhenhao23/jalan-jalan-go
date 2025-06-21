@@ -1,5 +1,6 @@
 import React from "react";
 import { useRef, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
 import * as THREE from "three";
 import { GLTFLoader } from "three-stdlib";
@@ -9,19 +10,19 @@ import "./Map.css";
 
 import Heritage from "./Heritage";
 
-const INITIAL_CENTER = [101.6929, 3.1390] as [number, number];
+const INITIAL_CENTER = [101.6929, 3.139] as [number, number];
 const INITIAL_ZOOM = 17.5;
 const INITIAL_PITCH = 45;
 
 const LOCATIONS = [
   {
     lng: 101.6929,
-    lat: 3.1390,
+    lat: 3.139,
     label: "Sultan Abdul Samad Building",
   },
   {
     lng: 101.6934,
-    lat: 3.1440,
+    lat: 3.144,
     label: "Merdeka Square (Dataran Merdeka)",
   },
   {
@@ -40,13 +41,13 @@ const LOCATIONS = [
     label: "Jamek Mosque (Masjid Jamek)",
   },
   {
-    lng: 101.6990,
+    lng: 101.699,
     lat: 3.1409,
     label: "Central Market (Pasar Seni)",
   },
   {
     lng: 101.6936,
-    lat: 3.1420,
+    lat: 3.142,
     label: "Old KL Railway Station",
   },
   {
@@ -61,7 +62,7 @@ const LOCATIONS = [
   },
   {
     lng: 101.7023,
-    lat: 3.1390,
+    lat: 3.139,
     label: "Chan She Shu Yuen Clan Ancestral Hall",
   },
   {
@@ -81,14 +82,14 @@ const LOCATIONS = [
   },
   {
     lng: 101.6987,
-    lat: 3.1140,
+    lat: 3.114,
     label: "Thean Hou Temple – Chinese Culture & Worship",
   },
   {
     lng: 101.7031,
     lat: 3.1615,
     label: "Kampung Baru – Malay Cultural Village",
-  }
+  },
 ];
 
 // Helper to calculate distance between two [lng, lat] points in meters
@@ -113,8 +114,19 @@ function haversineDistance(
 }
 
 function Map() {
+  const navigate = useNavigate();
   const [showHeritage, setShowHeritage] = React.useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<typeof LOCATIONS[0] | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<
+    (typeof LOCATIONS)[0] | null
+  >(null);
+
+  const handleBackpackClick = () => {
+    navigate("/bagpack");
+  };
+
+  const handleAnimalClick = () => {
+    navigate("/pet");
+  };
 
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -126,9 +138,8 @@ function Map() {
   const [center, setCenter] = useState<[number, number]>(INITIAL_CENTER);
   const [zoom, setZoom] = useState(INITIAL_ZOOM);
   // Set userLocation to static initial location instead of null
-  const [userLocation, setUserLocation] = useState<[number, number]>(
-    INITIAL_CENTER
-  );
+  const [userLocation, setUserLocation] =
+    useState<[number, number]>(INITIAL_CENTER);
   const [distance, setDistance] = useState(0);
   // Three.js setup for avatar and tiger
   useEffect(() => {
@@ -323,20 +334,20 @@ function Map() {
       if (!mapRef.current) return;
 
       LOCATIONS.forEach((loc) => {
-       const marker = new mapboxgl.Marker({
+        const marker = new mapboxgl.Marker({
           element: (() => {
-            const img = document.createElement('img');
-            img.src = '/assets/icon.png'; // Make sure the image is in your `public/` folder
-            img.style.width = '60px';
-            img.style.height = '60px';
+            const img = document.createElement("img");
+            img.src = "/assets/icon.png"; // Make sure the image is in your `public/` folder
+            img.style.width = "60px";
+            img.style.height = "60px";
             return img;
           })(),
         })
-        .setLngLat([loc.lng, loc.lat])
-        .addTo(mapRef.current!);
+          .setLngLat([loc.lng, loc.lat])
+          .addTo(mapRef.current!);
 
         // Add click event to marker instead of popup
-        marker.getElement().addEventListener('click', () => {
+        marker.getElement().addEventListener("click", () => {
           setSelectedLocation(loc);
           setShowHeritage(true);
         });
@@ -444,27 +455,27 @@ function Map() {
   return (
     <>
       {showHeritage && (
-        <div 
-          className="modal-overlay" 
+        <div
+          className="modal-overlay"
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: "rgba(0,0,0,0.5)",
             zIndex: 1000,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
           onClick={() => setShowHeritage(false)} // Close when clicking overlay
         >
-          <div 
-            style={{ 
-              maxWidth: '90vw', 
-              maxHeight: '90vh', 
-              overflow: 'auto' 
+          <div
+            style={{
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              overflow: "auto",
             }}
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
           >
@@ -477,6 +488,25 @@ function Map() {
           </div>
         </div>
       )}
+
+      {/* Backpack Button */}
+      <div onClick={handleBackpackClick} className="map-backpack-button">
+        <img
+          src="/src/assets/pngtree-handdrawing-school-backpack-png-image_6136819.png"
+          alt="Backpack"
+          className="map-backpack-icon"
+        />
+      </div>
+
+      {/* Animal Button */}
+      <div onClick={handleAnimalClick} className="map-animal-button">
+        <img
+          src="/src/assets/cute-tiger-head-clipart-design-illustration-free-png.webp"
+          alt="Animal"
+          className="map-animal-icon"
+        />
+      </div>
+
       <div
         ref={avatarContainerRef}
         style={{
