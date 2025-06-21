@@ -12,6 +12,7 @@ function Animal() {
   const navigate = useNavigate();
   const { selectedFood } = useFoodContext();
   const { selectedPet } = usePetContext();
+  const foodButton = useRef<HTMLDivElement>(null);
 
   const handleBackpackClick = () => {
     navigate("/bagpack");
@@ -32,7 +33,7 @@ function Animal() {
     // Main scene for the selected pet
     const scene = new THREE.Scene();
 
-    // Load and set background texture - use public folder path
+    // Load and set background texture
     const textureLoader = new THREE.TextureLoader();
     const backgroundTexture = textureLoader.load("/assets/grassbackground.jpg");
     scene.background = backgroundTexture;
@@ -43,11 +44,7 @@ function Animal() {
       0.1,
       1000
     );
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-    });
-
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     const container = mountRef.current;
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
@@ -62,14 +59,13 @@ function Animal() {
       antialias: true,
       alpha: true,
     });
-
     const foodContainer = foodButtonRef.current;
     const buttonSize = 100;
     foodRenderer.setSize(buttonSize, buttonSize);
     foodRenderer.setClearColor(0x000000, 0);
     foodContainer.appendChild(foodRenderer.domElement);
 
-    // Improved lighting setup for main scene
+    // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 5);
     scene.add(ambientLight);
 
@@ -86,42 +82,44 @@ function Animal() {
     topLight.position.set(0, 15, 0);
     scene.add(topLight);
 
-    // Lighting for food scene
     const foodAmbientLight = new THREE.AmbientLight(0xffffff, 0.8);
     foodScene.add(foodAmbientLight);
-
     const foodDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     foodDirectionalLight.position.set(2, 2, 2);
     foodScene.add(foodDirectionalLight);
 
     // Variables to store loaded objects
-    let petObject: THREE.Object3D | null = null;
+    let petObject: THREE.Object3D;
     let foodObject: THREE.Object3D | null = null;
 
     // Load selected pet FBX model
+    // Models
+
+    // ❤️ Heart sprite
+    const heartTexture = textureLoader.load("/src/assets/heart-removebg.png"); // Put a heart.png in public/assets/
+    const heartMaterial = new THREE.SpriteMaterial({
+      map: heartTexture,
+      transparent: true,
+    });
+    const heartSprite = new THREE.Sprite(heartMaterial);
+    heartSprite.scale.set(1, 1, 1); // Adjust size
+    heartSprite.visible = false;
+    scene.add(heartSprite);
+
     const loader = new FBXLoader();
     loader.load(
       selectedPet.path, // Use selectedPet.path instead of hardcoded tiger path
       (object) => {
         object.scale.setScalar(0.02);
-        object.position.set(0, 0, 0);
-
         const box = new THREE.Box3().setFromObject(object);
         const center = box.getCenter(new THREE.Vector3());
-        object.position.x = -center.x;
-        object.position.y = -center.y;
-        object.position.z = -center.z;
-
+        object.position.set(-center.x, -center.y, -center.z);
         object.traverse((child) => {
           if (child instanceof THREE.Mesh) {
             child.castShadow = true;
             child.receiveShadow = true;
-            if (child.material) {
-              child.material.needsUpdate = true;
-            }
           }
         });
-
         scene.add(object);
         petObject = object; // Changed from tigerObject to petObject
 
@@ -153,13 +151,9 @@ function Animal() {
         selectedFood.path,
         (object) => {
           object.scale.setScalar(0.1);
-
           const box = new THREE.Box3().setFromObject(object);
           const center = box.getCenter(new THREE.Vector3());
-          object.position.x = -center.x;
-          object.position.y = -center.y;
-          object.position.z = -center.z;
-
+          object.position.set(-center.x, -center.y, -center.z);
           object.userData.isDraggable = true;
           foodScene.add(object);
           foodObject = object;
@@ -177,10 +171,11 @@ function Animal() {
       );
     };
 
-    // Animation loop
     const startAnimation = () => {
       const animate = () => {
         requestAnimationFrame(animate);
+        if (petObject) petObject.rotation.y += 0;
+        if (foodObject) foodObject.rotation.y += 0.01;
 
         // Animate pet (if loaded)
         if (petObject) {
@@ -193,6 +188,41 @@ function Animal() {
         }
 
         // Render both scenes
+        // Check proximity and trigger heart
+        if (dragClone && petObject) {
+          const distance = dragClone.position.distanceTo(petObject.position);
+          if (distance < 2) {
+            if (!heartSprite.visible) {
+              heartSprite.visible = true;
+              heartSprite.position
+                .copy(petObject.position)
+                .add(new THREE.Vector3(0, 3, 0));
+
+              // Auto-hide the heart after 2 seconds
+              setTimeout(() => {
+                heartSprite.visible = false;
+              }, 1500); // 2000 milliseconds = 2 seconds
+            }
+
+            // Fade out nasi lemak
+            dragClone.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                if (Array.isArray(child.material)) {
+                  child.material.forEach((mat) => {
+                    if (mat.transparent)
+                      mat.opacity = Math.max(0, mat.opacity - 0.02);
+                  });
+                } else if (child.material.transparent) {
+                  child.material.opacity = Math.max(
+                    0,
+                    child.material.opacity - 0.02
+                  );
+                }
+              }
+            });
+          }
+        }
+
         renderer.render(scene, camera);
         foodRenderer.render(foodScene, foodCamera);
       };
@@ -204,14 +234,29 @@ function Animal() {
     // ...existing mouse event handlers remain the same...
 
     const onMouseDown = (event: MouseEvent) => {
-      const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      const rect = foodButtonRef.current?.getBoundingClientRect();
+      const btn = foodButton.current?.getBoundingClientRect();
+      if (!rect || !btn) return;
 
-      raycaster.setFromCamera(mouse, camera);
+      const inFoodArea =
+        event.clientX >= btn.left &&
+        event.clientX <= btn.right &&
+        event.clientY >= btn.top &&
+        event.clientY <= btn.bottom;
+
+      if (!inFoodArea) return;
+
+      const rendererCanvas = foodRenderer.domElement;
+      const rendererRect = rendererCanvas.getBoundingClientRect();
+      const normalizedX =
+        ((event.clientX - rendererRect.left) / rendererRect.width) * 2 - 1;
+      const normalizedY =
+        -((event.clientY - rendererRect.top) / rendererRect.height) * 2 + 1;
+
+      mouse.set(normalizedX, normalizedY);
+      raycaster.setFromCamera(mouse, foodCamera);
 
       const intersects = raycaster.intersectObjects(foodScene.children, true);
-
       if (intersects.length > 0) {
         const target = intersects[0].object;
         const parent = target.parent;
@@ -220,12 +265,15 @@ function Animal() {
 
           // Clone food into main scene
           dragClone = parent.clone();
-          dragClone.position.set(0, 0, 0);
           dragClone.scale.setScalar(0.01);
           dragClone.traverse((child) => {
             if (child instanceof THREE.Mesh) {
               child.castShadow = true;
               child.receiveShadow = true;
+              if (child.material) {
+                child.material.transparent = true;
+                child.material.opacity = 1;
+              }
             }
           });
           scene.add(dragClone);
@@ -238,7 +286,6 @@ function Animal() {
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
         raycaster.setFromCamera(mouse, camera);
         const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
         const intersection = new THREE.Vector3();
@@ -250,19 +297,32 @@ function Animal() {
     const onMouseUp = () => {
       isDragging = false;
       if (dragClone) {
-        scene.remove(dragClone);
-
-        if (dragClone instanceof THREE.Mesh) {
-          dragClone.geometry.dispose();
-
-          if (Array.isArray(dragClone.material)) {
-            dragClone.material.forEach((m) => m.dispose?.());
-          } else {
-            dragClone.material?.dispose?.();
-          }
-        }
-
+        const fadingClone = dragClone; // capture this clone before it's replaced
         dragClone = null;
+
+        // Start fade-out
+        const fadeInterval = setInterval(() => {
+          let allInvisible = true;
+
+          fadingClone.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              const materials = Array.isArray(child.material)
+                ? child.material
+                : [child.material];
+              materials.forEach((mat) => {
+                if (mat.transparent) {
+                  mat.opacity = Math.max(0, mat.opacity - 0.02);
+                  if (mat.opacity > 0) allInvisible = false;
+                }
+              });
+            }
+          });
+
+          if (allInvisible) {
+            scene.remove(fadingClone);
+            clearInterval(fadeInterval);
+          }
+        }, 50);
       }
     };
 
@@ -283,17 +343,11 @@ function Animal() {
       window.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
-
-      // Clean up main renderer
-      if (container && renderer.domElement) {
+      if (container && renderer.domElement)
         container.removeChild(renderer.domElement);
-      }
       renderer.dispose();
-
-      // Clean up food renderer
-      if (foodContainer && foodRenderer.domElement) {
+      if (foodContainer && foodRenderer.domElement)
         foodContainer.removeChild(foodRenderer.domElement);
-      }
       foodRenderer.dispose();
     };
   }, [selectedFood, selectedPet]); // Add selectedPet as dependency
@@ -314,7 +368,7 @@ function Animal() {
           className="animal-backpack-icon"
         />
       </div>
-      <div className="animal-food-button">
+      <div className="animal-food-button" ref={foodButton}>
         <div ref={foodButtonRef} className="animal-food-model" />
         {/* <div className="animal-food-label">{selectedFood.name}</div> */}
       </div>
