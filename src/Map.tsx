@@ -8,6 +8,84 @@ const INITIAL_CENTER = [101.6068, 3.0686] as [number, number];
 const INITIAL_ZOOM = 17.5;
 const INITIAL_PITCH = 45;
 
+const LOCATIONS = [
+  {
+    lng: 101.6929,
+    lat: 3.1390,
+    label: "Sultan Abdul Samad Building",
+  },
+  {
+    lng: 101.6934,
+    lat: 3.1440,
+    label: "Merdeka Square (Dataran Merdeka)",
+  },
+  {
+    lng: 101.6984,
+    lat: 3.1444,
+    label: "National Textile Museum",
+  },
+  {
+    lng: 101.6931,
+    lat: 3.1398,
+    label: "Kuala Lumpur City Gallery",
+  },
+  {
+    lng: 101.6958,
+    lat: 3.1424,
+    label: "Jamek Mosque (Masjid Jamek)",
+  },
+  {
+    lng: 101.6990,
+    lat: 3.1409,
+    label: "Central Market (Pasar Seni)",
+  },
+  {
+    lng: 101.6936,
+    lat: 3.1420,
+    label: "Old KL Railway Station",
+  },
+  {
+    lng: 101.6939,
+    lat: 3.1389,
+    label: "Masjid Negara (National Mosque)",
+  },
+  {
+    lng: 101.6895,
+    lat: 3.1358,
+    label: "Islamic Arts Museum Malaysia",
+  },
+  {
+    lng: 101.7023,
+    lat: 3.1390,
+    label: "Chan She Shu Yuen Clan Ancestral Hall",
+  },
+  {
+    lng: 101.6967,
+    lat: 3.1453,
+    label: "Sin Sze Si Ya Temple",
+  },
+  {
+    lng: 101.6985,
+    lat: 3.1448,
+    label: "Sri Mahamariamman Temple",
+  },
+  {
+    lng: 101.6841,
+    lat: 3.2353,
+    label: "Batu Caves – Hindu Cultural Landmark",
+  },
+  {
+    lng: 101.6987,
+    lat: 3.1140,
+    label: "Thean Hou Temple – Chinese Culture & Worship",
+  },
+  {
+    lng: 101.7031,
+    lat: 3.1615,
+    label: "Kampung Baru – Malay Cultural Village",
+  }
+];
+
 // Helper to calculate distance between two [lng, lat] points in meters
 function haversineDistance(
   [lng1, lat1]: [number, number],
@@ -58,6 +136,19 @@ function Map() {
       maxZoom: INITIAL_ZOOM + 1,
       interactive: false,
     });
+
+  mapRef.current.on("load", () => {
+    if (!mapRef.current) return;
+
+    LOCATIONS.forEach((loc) => {
+      new mapboxgl.Marker({ color: "#3FB1CE" }) // optional custom color
+        .setLngLat([loc.lng, loc.lat])
+        .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(loc.label))
+        .addTo(mapRef.current!);
+    });
+
+    // Optional: enable any controls or interactions here too
+  });
 
     mapRef.current.on("load", () => {
       if (!mapRef.current) return;
