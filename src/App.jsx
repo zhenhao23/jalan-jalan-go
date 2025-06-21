@@ -1,9 +1,9 @@
-// import Map from "./Map";
-import Heritage from "./Heritage";
+import Map from "./Map";
+// import Heritage from "./Heritage";
 import "./App.css";
 
 function App() {
-  return <Heritage />;
+  return <Map />;
 }
 
 export default App;
