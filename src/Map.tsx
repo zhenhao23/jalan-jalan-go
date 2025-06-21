@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import "./App.css";
+import "./Map.css";
 
 const INITIAL_CENTER = [101.6068, 3.0686] as [number, number];
 const INITIAL_ZOOM = 17.5;

@@ -1,0 +1,96 @@
+.food-container {
+  display: flex;
+  align-items: flex-start; /* Changed from center to flex-start */
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20px;
+  padding-top: 60px; /* Add top padding to move grid down from very top */
+  box-sizing: border-box;
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.food-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px;
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 1;
+  height: auto;
+}
+
+.food-item {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.close-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center; /* This centers the cross vertically */
+  justify-content: center; /* This centers the cross horizontally */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 10;
+  line-height: 1; /* Ensure proper line height for centering */
+}
+
+.close-btn:hover {
+  background-color: #c82333;
+}
+
+.close-btn:active {
+  transform: scale(0.95);
+}
+
+/* Responsive adjustments for iPhone 12 Pro */
+@media (max-width: 480px) {
+  .food-container {
+    padding: 15px;
+    padding-top: 50px; /* Adjust top padding for mobile */
+  }
+
+  .food-grid {
+    max-width: 320px;
+    gap: 12px;
+  }
+
+  .close-btn {
+    bottom: 25px;
+    right: 25px;
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+  }
+}
+
+/* Remove default body margins */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}

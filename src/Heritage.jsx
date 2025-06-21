@@ -1,14 +1,23 @@
 import React from "react";
 import "./Heritage.css";
+import merdekaSqareImg from "./assets/merdeka-square.jpg";
 
 function Heritage() {
+  const handleBack = () => {
+    window.history.back();
+  };
+
   return (
     <div className="heritage-container">
+      <button className="back-btn" onClick={handleBack}>
+        &#8249;
+      </button>
+
       <h1 className="heritage-title">Merdeka Square</h1>
 
       <div className="heritage-image-container">
         <img
-          src="/assets/merdeka-square.jpg"
+          src={merdekaSqareImg} // Use the imported image
           alt="Merdeka Square"
           className="heritage-image"
         />
