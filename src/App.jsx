@@ -53,11 +53,42 @@ function App() {
     });
 
     mapRef.current.on("load", () => {
+      // Enable drag rotate (for mouse right-click drag)
       mapRef.current.dragRotate.enable();
+
+      // Enable touch rotate (two-finger rotation)
       mapRef.current.touchZoomRotate.enableRotation();
+
+      // Enable touch pitch (single touch drag up/down to change pitch/angle)
+      mapRef.current.touchPitch.enable();
+
+      // IMPORTANT: Enable drag pan for touch pitch to work
+      mapRef.current.dragPan.enable();
+
+      // But disable keyboard interactions to prevent unwanted behavior
+      mapRef.current.keyboard.disable();
+      mapRef.current.scrollZoom.disable();
+      mapRef.current.boxZoom.disable();
+      mapRef.current.doubleClickZoom.disable();
     });
 
-    // ...existing code...
+    mapRef.current = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      center: center,
+      zoom: zoom,
+      pitch: INITIAL_PITCH,
+      minZoom: INITIAL_ZOOM - 1,
+      maxZoom: INITIAL_ZOOM + 1,
+      interactive: false,
+    });
+
+    mapRef.current.on("load", () => {
+      mapRef.current.dragRotate.enable();
+      mapRef.current.touchZoomRotate.enableRotation();
+      // Enable touch pitch for mobile
+      mapRef.current.touchPitch.enable();
+    });
+
     if (navigator.geolocation) {
       watchIdRef.current = navigator.geolocation.watchPosition(
         (position) => {
@@ -72,7 +103,7 @@ function App() {
             const d = haversineDistance(prevLocationRef.current, newCenter);
             setDistance((prev) => {
               const updated = prev + d;
-              console.log("Distance updated:", updated); // <-- ADD HERE
+              console.log("Distance updated:", updated);
               return updated;
             });
           }
@@ -93,15 +124,16 @@ function App() {
         },
         {
           enableHighAccuracy: true,
-          timeout: 5000, // Lower timeout for faster response
-          maximumAge: 0, // No caching, always get fresh position
+          timeout: 5000,
+          maximumAge: 0,
         }
       );
     }
-    // ...existing code...
 
     return () => {
-      mapRef.current.remove();
+      if (mapRef.current) {
+        mapRef.current.remove();
+      }
       if (watchIdRef.current) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
