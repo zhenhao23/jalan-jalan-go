@@ -33,7 +33,7 @@ function Bagpack() {
   };
 
   const handleClose = () => {
-    navigate("/animal");
+    navigate("/map");
   };
 
   useEffect(() => {

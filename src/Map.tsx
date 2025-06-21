@@ -141,6 +141,7 @@ function Map() {
   const [userLocation, setUserLocation] =
     useState<[number, number]>(INITIAL_CENTER);
   const [distance, setDistance] = useState(0);
+
   // Three.js setup for avatar and tiger
   useEffect(() => {
     if (!avatarContainerRef.current) return;
@@ -163,6 +164,10 @@ function Map() {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
+
+    // Add raycaster for click detection
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
 
     // Lighting setup
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
@@ -261,6 +266,9 @@ function Map() {
         // Rotate tiger to face the same direction as avatar
         object.rotation.y = Math.PI;
 
+        // Add userData to identify the tiger for click detection
+        object.userData = { name: "tiger", clickable: true };
+
         object.traverse((child) => {
           if (child instanceof THREE.Mesh) {
             child.castShadow = true;
@@ -268,6 +276,8 @@ function Map() {
             if (child.material) {
               child.material.needsUpdate = true;
             }
+            // Also add userData to mesh children for raycasting
+            child.userData = { name: "tiger", clickable: true };
           }
         });
 
@@ -283,6 +293,35 @@ function Map() {
         console.error("Error loading tiger FBX model:", error);
       }
     );
+
+    // Click event handler
+    const handleClick = (event: MouseEvent) => {
+      // Calculate mouse position in normalized device coordinates
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      // Update the picking ray with the camera and mouse position
+      raycaster.setFromCamera(mouse, camera);
+
+      // Calculate objects intersecting the picking ray
+      const intersects = raycaster.intersectObjects(scene.children, true);
+
+      if (intersects.length > 0) {
+        const clickedObject = intersects[0].object;
+
+        // Check if the clicked object is the tiger or part of the tiger
+        if (
+          clickedObject.userData?.name === "tiger" &&
+          clickedObject.userData?.clickable
+        ) {
+          navigate("/animal");
+        }
+      }
+    };
+
+    // Add event listener to the renderer's DOM element
+    renderer.domElement.addEventListener("click", handleClick);
 
     // Animation loop
     const animate = () => {
@@ -303,7 +342,11 @@ function Map() {
       renderer.render(scene, camera);
     };
     animate();
+
     return () => {
+      // Remove event listener
+      renderer.domElement.removeEventListener("click", handleClick);
+
       if (container && renderer.domElement) {
         container.removeChild(renderer.domElement);
       }
@@ -312,7 +355,7 @@ function Map() {
       }
       renderer.dispose();
     };
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -327,7 +370,7 @@ function Map() {
       pitch: INITIAL_PITCH,
       minZoom: INITIAL_ZOOM - 1,
       maxZoom: INITIAL_ZOOM + 1,
-      interactive: true,
+      interactive: false,
     });
 
     mapRef.current.on("load", () => {
@@ -354,9 +397,9 @@ function Map() {
       });
 
       // Add static user location marker
-      markerRef.current = new mapboxgl.Marker({ color: "red" })
-        .setLngLat(INITIAL_CENTER)
-        .addTo(mapRef.current);
+      // markerRef.current = new mapboxgl.Marker({ color: "red" })
+      //   .setLngLat(INITIAL_CENTER)
+      //   .addTo(mapRef.current);
 
       // Optional: enable any controls or interactions here too
     });
@@ -435,9 +478,9 @@ function Map() {
       // if (watchIdRef.current) {
       //   navigator.geolocation.clearWatch(watchIdRef.current);
       // }
-      if (markerRef.current) {
-        markerRef.current.remove();
-      }
+      // if (markerRef.current) {
+      //   markerRef.current.remove();
+      // }
     };
   }, []);
 
@@ -517,16 +560,10 @@ function Map() {
           width: "300px",
           height: "300px",
           zIndex: 999,
-          pointerEvents: "none", // Allow map interactions through the avatar
+          pointerEvents: "auto", // Changed from "none" to "auto" to allow clicks
+          cursor: "pointer", // Add cursor pointer to indicate clickability
         }}
       />
-
-      <div className="sidebar">
-        {/* Updated to show static location info */}
-        Static Location - Longitude: {userLocation[0].toFixed(6)} | Latitude:{" "}
-        {userLocation[1].toFixed(6)} | Zoom: {INITIAL_ZOOM} | Pitch:{" "}
-        {INITIAL_PITCH}° | Distance: {distance.toFixed(0)} m
-      </div>
       <div id="map-container" ref={mapContainerRef} />
     </>
   );
