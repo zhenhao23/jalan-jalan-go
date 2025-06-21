@@ -1,11 +1,10 @@
-// import Map from "./Map";
-// import Heritage from "./Heritage";
+import Map from "./Map";
+import Heritage from "./Heritage";
 // import Food from "./Food";
 import Animal from "./Animal";
 import "./App.css";
-
 function App() {
-  return <Animal />;
+  return <Map />;
 }
 
 export default App;
