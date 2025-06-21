@@ -21,7 +21,7 @@ function Food() {
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(
-        75,
+        50, // Reduced FOV for better perspective
         1, // Square aspect ratio
         0.1,
         1000
@@ -35,15 +35,29 @@ function Food() {
       const size = Math.min(container.clientWidth, container.clientHeight);
       renderer.setSize(size, size);
       renderer.setClearColor(0x000000, 0); // Transparent background
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       container.appendChild(renderer.domElement);
 
-      // Add lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      // Improved lighting setup
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Increased ambient light
       scene.add(ambientLight);
 
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(1, 1, 1);
-      scene.add(directionalLight);
+      // Main directional light from top-front
+      const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+      directionalLight1.position.set(0, 10, 5);
+      directionalLight1.castShadow = true;
+      scene.add(directionalLight1);
+
+      // Fill light from the side
+      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.6);
+      directionalLight2.position.set(-5, 5, 5);
+      scene.add(directionalLight2);
+
+      // Additional top light for better visibility
+      const topLight = new THREE.DirectionalLight(0xffffff, 0.4);
+      topLight.position.set(0, 15, 0);
+      scene.add(topLight);
 
       // Load FBX model
       const loader = new FBXLoader();
@@ -51,7 +65,7 @@ function Food() {
         modelPath,
         (object) => {
           // Scale and position the model
-          object.scale.setScalar(0.01); // Adjust scale as needed
+          object.scale.setScalar(0.02); // Slightly larger scale
           object.position.set(0, 0, 0);
 
           // Center the model
@@ -61,16 +75,34 @@ function Food() {
           object.position.y = -center.y;
           object.position.z = -center.z;
 
+          // Enable shadows for the model
+          object.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+              // Enhance material properties if needed
+              if (child.material) {
+                child.material.needsUpdate = true;
+              }
+            }
+          });
+
           scene.add(object);
 
-          // Position camera
-          camera.position.z = 5;
+          // Position camera for 45-degree top-down view
+          const distance = 8;
+          const angle = Math.PI / 4; // 45 degrees in radians
+          camera.position.set(
+            distance * Math.sin(angle),
+            distance * Math.sin(angle),
+            distance * Math.cos(angle)
+          );
           camera.lookAt(0, 0, 0);
 
           // Animation loop
           const animate = () => {
             requestAnimationFrame(animate);
-            object.rotation.y += 0.01; // Rotate the model
+            object.rotation.y += 0.008; // Slightly slower rotation
             renderer.render(scene, camera);
           };
           animate();
