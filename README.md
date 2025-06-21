@@ -21,6 +21,7 @@ Built with Visit Malaysia 2026 in mind, Jalan-Jalan Go reimagines digital touris
 - **Meshy AI** – To generate 3D models of cultural animals
 - **ChatGPT** – For coding and development support
 - **Three.js** – To render 3D characters and elements in the browser
+- **Appwrite** – Backend hosting platform
 
 ---
 
