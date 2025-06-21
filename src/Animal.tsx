@@ -12,6 +12,11 @@ function Animal() {
   };
 
   useEffect(() => {
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let isDragging = false;
+    let dragClone: THREE.Object3D | null = null;
+
     if (!mountRef.current || !foodButtonRef.current) return;
 
     // Main scene for tiger
@@ -139,6 +144,7 @@ function Animal() {
           object.position.y = -center.y;
           object.position.z = -center.z;
 
+          object.userData.isDraggable = true;
           foodScene.add(object);
           nasiLemakObject = object;
 
@@ -178,6 +184,73 @@ function Animal() {
     };
 
     loadNasiLemak();
+
+    const onMouseDown = (event: MouseEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersects = raycaster.intersectObjects(foodScene.children, true);
+
+      if (intersects.length > 0) {
+        const target = intersects[0].object;
+        const parent = target.parent;
+        if (parent && parent.userData.isDraggable) {
+          isDragging = true;
+
+          // Clone nasi lemak into main scene
+          dragClone = parent.clone();
+          dragClone.position.set(0, 0, 0);
+          dragClone.scale.setScalar(0.01);
+          dragClone.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          scene.add(dragClone);
+        }
+      }
+    };
+
+    const onMouseMove = (event: MouseEvent) => {
+      if (isDragging && dragClone) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+        const intersection = new THREE.Vector3();
+        raycaster.ray.intersectPlane(planeZ, intersection);
+        dragClone.position.copy(intersection);
+      }
+    };
+
+    const onMouseUp = () => {
+      isDragging = false;
+      if (dragClone) {
+        scene.remove(dragClone);
+
+        if (dragClone instanceof THREE.Mesh) {
+          dragClone.geometry.dispose();
+
+          if (Array.isArray(dragClone.material)) {
+            dragClone.material.forEach((m) => m.dispose?.());
+          } else {
+            dragClone.material?.dispose?.();
+          }
+        }
+
+        dragClone = null;
+      }
+    };
+
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
